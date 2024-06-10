@@ -11,7 +11,7 @@ else()
 endif()
 
 project(spacemesh-cuda LANGUAGES CXX CUDA)
-add_compile_options(-fPIC)
+add_compile_options(/bigobj) # Anpassung für Windows
 
 include(FetchContent)
 
@@ -40,10 +40,10 @@ if(${WITH_TEST})
     endif()
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "RELEASE")
-        set(NVCC_FLAGS -O3 -Wno-deprecated-gpu-targets --Werror all-warnings)
+        set(NVCC_FLAGS /O2 /W3 /WX) # Anpassung für Windows: Optimierungen und Warnungen
         message(STATUS "${TEST_EXE} compile cuda code in release mode")
     else()
-        set(NVCC_FLAGS -G -Wno-deprecated-gpu-targets --Werror all-warnings)
+        set(NVCC_FLAGS /Od /W3 /WX /DEBUG) # Anpassung für Windows: Debug-Modus
         message(STATUS "${TEST_EXE} compile cuda code in debug mode")
     endif()
 
@@ -65,7 +65,7 @@ if(${WITH_TEST})
             PRIVATE gtest
             PRIVATE gtest_main)
     include(GoogleTest)
-    set(NVCC_FLAGS ${NVCC_FLAGS})# "SHELL:-t 0" "SHELL:-split-compile 0")
+    set(NVCC_FLAGS ${NVCC_FLAGS})
     target_compile_options(${TEST_EXE} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--forward-unknown-opts -Wall ${NVCC_FLAGS}>
             PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wall>)
     add_test(NAME test_corr COMMAND ${TEST_EXE} --gtest_filter=*CheckResult*)
